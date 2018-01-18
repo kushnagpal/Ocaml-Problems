@@ -34,6 +34,27 @@ let is_palindrome lst =
     let reversed = rev lst in
     if lst = reversed then true else false
 
+type 'a node =
+    | One of 'a 
+    | Many of 'a node list
+
+let rec flatten lst =
+    match lst with
+    | [] -> []
+    | h::t -> (match h with
+                | One (o) -> o::(flatten t)
+                | Many (m) -> (flatten m)@(flatten t))
+
+let pack lst = 
+    let rec get_packed l prevChr =
+        match l with
+        | [] -> []
+        | h::t -> if h = prevChr then h::(get_packed t h) else []
+    in
+    match lst with
+    | [] -> []
+    | h::t -> (h::(get_packed t h))
+
 let compress lst =
     let rec get_compressed oldLst newLst prevChr = 
         match oldLst with
@@ -118,3 +139,24 @@ let factors i =
     let rec get_list start num =
         if start <= num then (if is_prime start && num mod start = 0 then start::(get_list 1 (num / start)) else get_list (start + 1) num) else []
     in get_list 1 i
+
+let goldbach i =
+    let rec determine_primes num start =
+        if num = start then (0,0) else (if is_prime start && is_prime (num - start) then (start, num - start) else determine_primes num (start + 1))
+    in determine_primes i 1
+
+let rec goldbach_list num1 num2 = 
+    if num1 <= num2 then (if num1 mod 2 = 0 then (num1, (goldbach num1))::(goldbach_list (num1 + 1) num2) else goldbach_list (num1 + 1) num2) else []
+
+type bool_expr =
+    | Var of bool
+    | Not of bool_expr
+    | And of bool_expr * bool_expr
+    | Or of bool_expr * bool_expr
+
+let rec eval_expr exp =
+    match exp with
+    | Var (x) -> x
+    | Not (e) -> not(eval_expr e)
+    | And (e1, e2) -> eval_expr e1 && eval_expr e2
+    | Or (e1, e2) -> eval_expr e1 || eval_expr e2
